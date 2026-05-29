@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard BI V4.9 - Control de Saldos y Disponibles</title>
+  <script src="datos_dashboard.js"></script>
+  <style>
+    :root {
+      --bg:#eef2f6; --panel:#ffffff; --soft:#f7f9fc; --line:#d8e1ec;
+      --blue:#244a86; --blue2:#17324f; --green:#2f855a; --amber:#b7791f; --red:#b91c1c;
+      --text:#172033; --muted:#667085; --shadow:0 12px 30px rgba(16,24,40,.07);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+    main{padding:0 24px 28px}
+    .topbar{margin:0 -24px;background:var(--blue);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+    .title h1{margin:0 0 5px;font-size:27px;font-weight:600}.title p{margin:0;color:#e7eef8;font-size:13px}
+    .header-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .pill-dark{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:800;white-space:nowrap}
+    .filters{margin:0 -24px 18px;background:#fff;border-bottom:1px solid var(--line);padding:12px 24px 10px}
+    .filter-grid{display:grid;grid-template-columns:480px 180px 145px 145px 145px 78px 84px 170px;gap:10px;align-items:end}
+    .filter label{display:block;font-size:11px;text-transform:uppercase;color:var(--blue);font-weight:900;margin-bottom:7px}
+    .period-buttons{display:flex;gap:8px}
+    .period-btn{border:1px solid #d5dde8;background:#fff;border-radius:18px;padding:8px 14px;font-size:13px;font-weight:800;cursor:pointer}
+    .period-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+    select,input{width:100%;height:38px;border:1px solid #d5dde8;border-radius:6px;padding:8px 10px;background:#fff;font-size:12px}
+    .btn{height:38px;border:1px solid transparent;border-radius:6px;padding:0 14px;font-weight:900;font-size:12px;cursor:pointer}
+    .btn-primary{background:var(--blue);color:#fff}.btn-secondary{background:#f3f4f6;color:#334155;border-color:#d5dde8}.btn-export{background:var(--green);color:#fff;width:100%}
+    .active-query{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+    .active-query strong{font-size:12px;color:var(--muted)}
+    .active-query span{background:#eaf4ff;color:#1d5fa8;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800}
+    .kpis{display:grid;grid-template-columns:repeat(5,minmax(160px,1fr));gap:14px;margin-bottom:16px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+    .kpi{padding:16px;border-top:4px solid var(--blue)}
+    .kpi:nth-child(2){border-color:var(--green)}.kpi:nth-child(3){border-color:var(--amber)}.kpi:nth-child(4),.kpi:nth-child(5){border-color:var(--red)}
+    .kpi-label{font-size:12px;color:var(--muted);margin-bottom:9px}.kpi-value{font-size:22px;font-weight:900;color:#0f1f33}
+    .money{font-size:18px;font-variant-numeric:tabular-nums}
+    .badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:900}
+    .ok{background:#e6f4ec;color:#276749}.warn{background:#fff4db;color:#975a16}.crit{background:#fde8e8;color:#9b1c1c}.neutral{background:#eaf4ff;color:#1d5fa8}
+    .priority{padding:16px;display:grid;grid-template-columns:220px 1fr auto;gap:15px;align-items:center;border-left:7px solid var(--red);margin-bottom:16px;background:linear-gradient(90deg,#fff8f8,#fff)}
+    .priority small{display:block;color:var(--muted);font-weight:900;text-transform:uppercase;margin-bottom:6px}.priority h2{margin:0;font-size:22px}.priority p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+    .summary{padding:16px;margin-bottom:16px}
+    .section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .section-title h3{margin:0;font-size:17px}.section-title span{font-size:12px;color:var(--muted);text-align:right}
+    .context{display:flex;gap:8px;flex-wrap:wrap;background:#f7faff;border:1px solid #dbe7f5;border-radius:12px;padding:9px 11px;margin-bottom:12px}
+    .context strong{font-size:12px;color:var(--blue)}
+    .context span{background:#fff;border:1px solid #d7e3f0;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800}
+    .table-wrap{max-height:385px;overflow:auto;border:1px solid #e5edf5;border-radius:12px}
+    table{border-collapse:collapse;width:100%;min-width:1120px;font-size:12px}
+    th{position:sticky;top:0;background:#f3f6fa;z-index:2;text-align:left;color:#4b5563;font-weight:900;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}
+    td{padding:10px;border-bottom:1px solid #edf2f7;vertical-align:middle}
+    .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.entity{font-weight:900;color:var(--blue2)}.sub{display:block;font-size:10px;color:var(--muted);margin-top:2px}.row-ok td{background:#f8fcfa}.row-warn td{background:#fff1df}.row-crit td{background:#fde8e8}.row-ok:hover td{background:#eefaf3}.row-warn:hover td{background:#ffe6c7}.row-crit:hover td{background:#fbd5d5}
+    .trend{font-weight:900}.trend.bad{color:var(--red)}.trend.mid{color:var(--amber)}.trend.good{color:var(--green)}
+    .viz-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}.viz{padding:16px}.viz-full{grid-column:1/-1}
+    .svg-box{width:100%;height:300px;border:1px solid #e5edf5;border-radius:14px;background:linear-gradient(180deg,#fbfdff,#f7f9fc)}
+    .small-note{font-size:11px;color:var(--muted)}
+    .bar-list{display:grid;gap:10px}.bar-row{display:grid;grid-template-columns:145px 1fr 150px;gap:10px;align-items:center;font-size:12px}
+    .bar-track{height:18px;background:#e7edf4;border-radius:999px;overflow:hidden}.bar{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--red),var(--amber))}.bar.okbar{background:linear-gradient(90deg,var(--blue2),var(--green))}
+    .focus-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.focus-card{border:1px solid var(--line);background:linear-gradient(180deg,#fff,#f8fafc);border-radius:14px;padding:13px}.focus-card h4{margin:0 0 6px;font-size:15px}.focus-meta{font-size:11px;color:var(--muted);margin-bottom:9px}.focus-kpi{display:flex;justify-content:space-between;border-top:1px dashed #e2e8f0;padding:6px 0;font-size:12px}.focus-kpi strong{color:#102033}
+    .heat-wrap{overflow:auto;border:1px solid #e5edf5;border-radius:14px;padding:10px;background:#fbfdff}.heat-table{display:grid;gap:6px;min-width:780px}.heat-head,.heat-entity,.heat-day{min-height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}.heat-head{background:#eaf0f7;color:#334155}.heat-entity{justify-content:flex-start;padding:0 10px;background:#f8fafc;color:var(--blue2)}.heat-day.OK{background:#e6f4ec;color:#276749}.heat-day.Revisar{background:#fff4db;color:#975a16}.heat-day.Crítico{background:#fde8e8;color:#9b1c1c}
+    .stack-list{display:grid;gap:10px}.stack-row{display:grid;grid-template-columns:65px 1fr 70px;gap:10px;align-items:center;font-size:12px}.stack{height:16px;border-radius:999px;overflow:hidden;background:#e7edf4;display:flex}.seg-ok{background:var(--green)}.seg-warn{background:var(--amber)}.seg-crit{background:var(--red)}
+    .status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px}.status-card{border:1px solid #e2e8f0;border-radius:14px;padding:14px;background:#fff}.status-card strong{display:block;font-size:26px;margin:4px 0}.status-card span{font-size:12px;color:var(--muted);font-weight:800}.status-card.ok-card{border-top:4px solid var(--green)}.status-card.warn-card{border-top:4px solid var(--amber)}.status-card.crit-card{border-top:4px solid var(--red)}.status-mini{height:10px;border-radius:999px;background:#edf2f7;overflow:hidden;margin-top:10px}.status-mini div{height:100%;border-radius:999px}.matrix-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.matrix-legend span{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}.legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block}.legend-ok{background:var(--green)}.legend-warn{background:var(--amber)}.legend-crit{background:var(--red)}.chart-explain{font-size:11px;color:var(--muted);line-height:1.35;margin-top:8px}
+
+    @media(max-width:1280px){.filter-grid{grid-template-columns:repeat(2,1fr)}.filter:first-child{grid-column:1/-1}.kpis{grid-template-columns:repeat(3,1fr)}.viz-grid{grid-template-columns:1fr}.focus-grid{grid-template-columns:1fr}.priority{grid-template-columns:1fr}}
+    @media(max-width:780px){main{padding:0 14px 20px}.topbar,.filters{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}.topbar{flex-direction:column;align-items:stretch}.kpis,.filter-grid{grid-template-columns:1fr}.period-buttons{flex-wrap:wrap}}
+  </style>
+</head>
+<body>
+<main>
+  <section class="topbar"><div class="title"><h1>Control de Saldos y Disponibles</h1><p>Monitoreo de diferencias entre Archivos y SRT</p></div><div class="header-actions"><div class="pill-dark" id="updated-card">Datos actualizados: -</div><div class="pill-dark" id="fecha-dashboard">-</div></div></section>
+  <section class="filters"><div class="filter-grid"><div class="filter"><label>Período</label><div class="period-buttons"><button class="period-btn" data-period="today">Hoy</button><button class="period-btn" data-period="last3">Últimos 3 días</button><button class="period-btn" data-period="last7">Últimos 7 días</button><button class="period-btn" data-period="last30">Últimos 30 días</button><button class="period-btn" data-period="all">Todo</button></div></div><div class="filter"><label>Entidad</label><select id="entity-select"></select></div><div class="filter"><label>Desde</label><input id="from-date" type="date"></div><div class="filter"><label>Hasta</label><input id="to-date" type="date"></div><div class="filter"><label>Ver por</label><select id="view-by"><option value="abs">Diferencia absoluta</option><option value="pct">Diferencia %</option><option value="alerts">Días en alerta</option><option value="entity">Entidad / Fecha</option></select></div><div class="filter"><button class="btn btn-primary" id="apply-btn">Aplicar</button></div><div class="filter"><button class="btn btn-secondary" id="clear-btn">Limpiar</button></div><div class="filter"><button class="btn btn-export" id="export-btn">⬇ Descargar Excel</button></div></div><div class="active-query" id="active-query"></div></section>
+  <section class="kpis" id="kpis"></section>
+  <section class="card priority" id="priority"></section>
+  <section class="card summary"><div class="section-title"><h3 id="summary-title">Resumen operativo</h3><span id="summary-subtitle">-</span></div><div class="context" id="context"></div><div class="table-wrap"><table id="summary-table"></table></div></section>
+  <section class="viz-grid" id="viz-grid"></section>
+</main>
+<script>
+const DATA = window.DASHBOARD_CONTROL_SALDOS || {};
+const RAW = (DATA.registros || []).map(r => ({...r, diferencia: Number(r.diferencia||0), dif_porcentaje: Number(r.dif_porcentaje||0), total_disponible:Number(r.total_disponible||0), saldo_srt:Number(r.saldo_srt||0)}));
+const META = DATA.metadata || {};
+const fmtMoney = new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:2,maximumFractionDigits:2});
+let currentExportRows=[];
+let allDates=[...new Set(RAW.map(r=>r.fecha))].sort();
+let latestDate=allDates[allDates.length-1]||'';
+let state={period:'today',from:latestDate,to:latestDate,entity:'Todas',viewBy:'abs'};
+function labelDate(d){ if(!d) return '-'; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; }
+function shortDate(d){ if(!d) return '-'; const [y,m,day]=d.split('-'); return `${day}/${m}`; }
+function fmtPct(v){ return `${Number(v||0).toFixed(2).replace('.',',')}%`; }
+function statusClass(s){ return s==='Crítico'?'crit':s==='Revisar'?'warn':'ok'; }
+function setup(){
+  document.getElementById('fecha-dashboard').textContent = new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('updated-card').textContent = `Datos actualizados: ${META.generado_en||'-'} · Último dato: ${labelDate(META.ultima_fecha_datos)}`;
+  const ent=['Todas', ...[...new Set(RAW.map(r=>r.codigo_entidad||`${r.codigo} · ${r.entidad}`))].sort()];
+  document.getElementById('entity-select').innerHTML = ent.map(e=>`<option>${e}</option>`).join('');
+  document.querySelectorAll('.period-btn').forEach(b=>b.onclick=()=>{setPeriod(b.dataset.period);render();});
+  document.getElementById('apply-btn').onclick=()=>{state.period='custom';state.from=document.getElementById('from-date').value;state.to=document.getElementById('to-date').value;state.entity=document.getElementById('entity-select').value;state.viewBy=document.getElementById('view-by').value;render();};
+  document.getElementById('clear-btn').onclick=()=>{state={period:'today',from:latestDate,to:latestDate,entity:'Todas',viewBy:'abs'};render();};
+  document.getElementById('export-btn').onclick=exportExcel;
+}
+function setPeriod(p){ state.period=p; state.entity=document.getElementById('entity-select').value; state.viewBy=document.getElementById('view-by').value; const idx=allDates.indexOf(latestDate); if(p==='today'){state.from=latestDate;state.to=latestDate;} else if(p==='last3'){state.from=allDates[Math.max(0,idx-2)];state.to=latestDate;} else if(p==='last7'){state.from=allDates[Math.max(0,idx-6)];state.to=latestDate;} else if(p==='last30'){state.from=allDates[Math.max(0,idx-29)];state.to=latestDate;} else {state.from=allDates[0];state.to=latestDate;} }
+function filtered(){ const rows=RAW.filter(r=>r.fecha>=state.from && r.fecha<=state.to && (state.entity==='Todas'||(r.codigo_entidad||`${r.codigo} · ${r.entidad}`)===state.entity)); if(state.viewBy==='entity'){ return rows.sort((a,b)=>(a.codigo-b.codigo)||a.fecha.localeCompare(b.fecha)); } return rows.sort((a,b)=>(a.codigo-b.codigo)||a.fecha.localeCompare(b.fecha)); }
+function group(rows){ const m={}; rows.forEach(r=>{const k=r.codigo_entidad||`${r.codigo} · ${r.entidad}`; (m[k]??=[]).push(r);}); return Object.entries(m).map(([k,arr])=>{arr.sort((a,b)=>a.fecha.localeCompare(b.fecha)); const latest=arr[arr.length-1]; const alertDays=new Set(arr.filter(r=>r.estado!=='OK').map(r=>r.fecha)).size; const maxAbs=Math.max(...arr.map(r=>Math.abs(r.diferencia||0))); const sumAbs=arr.reduce((s,r)=>s+Math.abs(r.diferencia||0),0); const avgPct=arr.reduce((s,r)=>s+(r.dif_porcentaje||0),0)/arr.length; const first=Math.abs(arr[0].diferencia||0), last=Math.abs(latest.diferencia||0); let trend='→ Estable'; if(last>first*1.15) trend='↑ Empeora'; if(last<first*.85) trend='↓ Mejora'; return {...latest,key:k,rows:arr,alertDays,maxAbs,sumAbs,avgPct,trend};}).sort((a,b)=>{ if(state.viewBy==='entity') return a.codigo-b.codigo; if(state.viewBy==='pct') return Math.abs(b.avgPct)-Math.abs(a.avgPct); if(state.viewBy==='alerts') return b.alertDays-a.alertDays; return b.maxAbs-a.maxAbs; }); }
+function render(){ document.querySelectorAll('.period-btn').forEach(b=>b.classList.toggle('active',b.dataset.period===state.period)); document.getElementById('from-date').value=state.from;document.getElementById('to-date').value=state.to;document.getElementById('entity-select').value=state.entity;document.getElementById('view-by').value=state.viewBy; const rows=filtered(); const dates=[...new Set(rows.map(r=>r.fecha))].sort(); const groups=group(rows); renderActive(dates);renderKpis(rows,groups,dates);renderPriority(groups,dates);renderTable(rows,groups,dates);renderVisuals(rows,groups,dates); }
+function renderActive(dates){ const label=state.period==='today'?'Hoy / último día cargado':state.period==='last3'?'Últimos 3 días':state.period==='last7'?'Últimos 7 días':state.period==='last30'?'Últimos 30 días':state.period==='all'?'Todo':'Rango personalizado'; document.getElementById('active-query').innerHTML=`<strong>Filtros activos:</strong><span>🗓 ${label}</span><span>↔ ${labelDate(state.from)} a ${labelDate(state.to)}</span><span>🏦 Entidad: ${state.entity}</span><span>📌 Ver por: ${document.getElementById('view-by').selectedOptions[0].text}</span><span>⬇ Exportación: consulta filtrada</span>`; }
+function renderKpis(rows,groups,dates){ const maxDiff=Math.max(0,...groups.map(g=>g.maxAbs)); const alerts=groups.filter(g=>g.alertDays>0).length; const daysAlert=dates.filter(d=>rows.some(r=>r.fecha===d&&r.estado!=='OK')).length; document.getElementById('kpis').innerHTML=`<div class="card kpi"><div class="kpi-label">Período</div><div class="kpi-value">${dates.length===1?labelDate(state.from):`${shortDate(state.from)} al ${shortDate(state.to)}`}</div></div><div class="card kpi"><div class="kpi-label">Entidades</div><div class="kpi-value">${groups.length}</div></div><div class="card kpi"><div class="kpi-label">Entidades en alerta</div><div class="kpi-value">${alerts}</div></div><div class="card kpi"><div class="kpi-label">Mayor diferencia</div><div class="kpi-value money">${fmtMoney.format(maxDiff)}</div></div><div class="card kpi"><div class="kpi-label">Días con desvíos</div><div class="kpi-value">${daysAlert} / ${dates.length||0}</div></div>`; }
+function renderPriority(groups,dates){ const p=groups[0]; if(!p){document.getElementById('priority').innerHTML='<p>No hay datos para el filtro seleccionado.</p>';return;} const cls=statusClass(p.estado); document.getElementById('priority').style.borderLeftColor=cls==='crit'?'var(--red)':cls==='warn'?'var(--amber)':'var(--green)'; document.getElementById('priority').innerHTML=`<div><small>Prioridad de atención</small><h2>${p.codigo} · ${p.entidad}</h2></div><p>Mayor impacto del filtro actual. Máxima diferencia: <strong>${fmtMoney.format(p.maxAbs)}</strong>. Días en alerta: <strong>${p.alertDays}/${dates.length}</strong>. Tendencia: <strong>${p.trend}</strong>.</p><span class="badge ${cls}">${p.estado} · ${p.alertDays}/${dates.length} días</span>`; }
+function renderTable(rows,groups,dates){
+  const oneEntity=state.entity!=='Todas';
+  const multi=dates.length>1;
+  const entityDateView=state.viewBy==='entity';
+  document.getElementById('summary-title').textContent=entityDateView?'Detalle operativo por entidad y fecha':oneEntity?'Detalle operativo de entidad':multi?'Detalle operativo del período':'Resumen operativo del día';
+  document.getElementById('summary-subtitle').textContent=entityDateView?`Ordenado por código de entidad y fecha · ${labelDate(state.from)} a ${labelDate(state.to)}`:`${multi?'Período filtrado':'Último día cargado'} · ${labelDate(state.from)} a ${labelDate(state.to)}`;
+  document.getElementById('context').innerHTML=`<strong>Consulta actual:</strong><span>🗓 Desde: ${labelDate(state.from)}</span><span>🗓 Hasta: ${labelDate(state.to)}</span><span>🏦 Entidad: ${state.entity}</span><span>📌 Ver por: ${entityDateView?'Entidad / Fecha':document.getElementById('view-by').selectedOptions[0].text}</span><span>⬇ Exportable a Excel</span>`;
+  const table=document.getElementById('summary-table');
+
+  if(entityDateView){
+    const ordered=[...rows].sort((a,b)=>(a.codigo-b.codigo)||a.fecha.localeCompare(b.fecha));
+    currentExportRows=ordered.map(r=>({Fecha:r.fecha,Código:r.codigo,Entidad:r.entidad,Disponible:r.total_disponible,Registros:r.registros,'Saldo SRT':r.saldo_srt,Diferencia:r.diferencia,'Dif %':r.dif_porcentaje,Estado:r.estado,Observaciones:r.observaciones}));
+    table.innerHTML=`<thead><tr><th>Fecha</th><th>Código</th><th>Entidad</th><th class="num">Disponible</th><th class="num">Registros</th><th class="num">Saldo SRT</th><th class="num">Diferencia</th><th class="num">Dif. %</th><th>Estado</th><th>Observaciones</th></tr></thead><tbody>${ordered.map(r=>`<tr class="${r.estado==='Crítico'?'row-crit':r.estado==='Revisar'?'row-warn':'row-ok'}"><td>${r.fecha}</td><td>${r.codigo}</td><td><span class="entity">${r.entidad}</span><span class="sub">Entidad / Fecha</span></td><td class="num">${fmtMoney.format(r.total_disponible)}</td><td class="num">${fmtNum.format(r.registros||0)}</td><td class="num">${fmtMoney.format(r.saldo_srt)}</td><td class="num">${fmtMoney.format(r.diferencia)}</td><td class="num">${fmtPct(r.dif_porcentaje)}</td><td><span class="badge ${statusClass(r.estado)}">${r.estado}</span></td><td>${r.observaciones||'—'}</td></tr>`).join('')}</tbody>`;
+    return;
+  }
+
+  if(oneEntity||multi){
+    // Para período de más de un día, el detalle operativo se ordena por ENTIDAD/CÓDIGO y luego por FECHA.
+    // Esto permite leer la evolución de cada entidad completa antes de pasar a la siguiente.
+    const detailRows=[...rows].sort((a,b)=>(a.codigo-b.codigo)||a.fecha.localeCompare(b.fecha));
+    currentExportRows=detailRows.map(r=>({Fecha:r.fecha,Código:r.codigo,Entidad:r.entidad,Disponible:r.total_disponible,'Saldo SRT':r.saldo_srt,Diferencia:r.diferencia,'Dif %':r.dif_porcentaje,Estado:r.estado,Observaciones:r.observaciones}));
+    table.innerHTML=`<thead><tr><th>Fecha</th><th>Código</th><th>Entidad</th><th class="num">Disponible</th><th class="num">Saldo SRT</th><th class="num">Diferencia</th><th class="num">Dif. %</th><th>Estado</th><th>Observaciones</th></tr></thead><tbody>${detailRows.map(r=>`<tr class="${r.estado==='Crítico'?'row-crit':r.estado==='Revisar'?'row-warn':'row-ok'}"><td>${r.fecha}</td><td>${r.codigo}</td><td><span class="entity">${r.entidad}</span><span class="sub">Orden entidad → fecha</span></td><td class="num">${fmtMoney.format(r.total_disponible)}</td><td class="num">${fmtMoney.format(r.saldo_srt)}</td><td class="num">${fmtMoney.format(r.diferencia)}</td><td class="num">${fmtPct(r.dif_porcentaje)}</td><td><span class="badge ${statusClass(r.estado)}">${r.estado}</span></td><td>${r.observaciones||'—'}</td></tr>`).join('')}</tbody>`;
+  } else {
+    const orderedGroups=[...groups].sort((a,b)=>a.codigo-b.codigo);
+    currentExportRows=orderedGroups.map(g=>({Entidad:`${g.codigo} · ${g.entidad}`,Fecha:labelDate(g.fecha),Disponible:g.total_disponible,'Saldo SRT':g.saldo_srt,Diferencia:g.diferencia,'Dif %':g.dif_porcentaje,Estado:g.estado,Observaciones:g.observaciones}));
+    table.innerHTML=`<thead><tr><th>Entidad</th><th>Fecha</th><th class="num">Disponible</th><th class="num">Saldo SRT</th><th class="num">Diferencia</th><th class="num">Dif. %</th><th>Estado</th><th>Observaciones</th></tr></thead><tbody>${orderedGroups.map(g=>`<tr><td><span class="entity">${g.codigo} · ${g.entidad}</span><span class="sub">Control del último día cargado</span></td><td>${labelDate(g.fecha)}</td><td class="num">${fmtMoney.format(g.total_disponible)}</td><td class="num">${fmtMoney.format(g.saldo_srt)}</td><td class="num">${fmtMoney.format(g.diferencia)}</td><td class="num">${fmtPct(g.dif_porcentaje)}</td><td><span class="badge ${statusClass(g.estado)}">${g.estado}</span></td><td>${g.observaciones||'—'}</td></tr>`).join('')}</tbody>`;
+  }
+}
+function card(title,subtitle,body,full=false){return `<div class="card viz ${full?'viz-full':''}"><div class="section-title"><h3>${title}</h3><span>${subtitle}</span></div>${body}</div>`}
+function renderVisuals(rows,groups,dates){ const isEntity=state.entity!=='Todas', multi=dates.length>1; let html=''; if(!rows.length){document.getElementById('viz-grid').innerHTML=card('Sin datos','Filtro actual','<p>No hay datos para graficar.</p>',true);return;} if(isEntity){html+=card('Evolución de diferencia','Solo para entidad filtrada', multi?lineChart(rows,dates):singleDayEntity(groups[0]), true); html+=card('Disponible vs Saldo SRT','Brecha diaria', balanceDaily(rows,dates)); html+=card('Estado día por día','Recurrencia del estado', entityStatus(rows,dates));} else if(multi){html+=card('Matriz de riesgo operacional','Impacto financiero x recurrencia', riskMatrix(groups,dates)+'<div class="small-note">Arriba a la derecha = mayor prioridad operativa.</div>'); html+=card('Pareto de impacto','Diferencia absoluta acumulada', pareto(groups)); html+=card('Evolución del desvío total','Solo aparece en rangos de más de un día', lineTotal(rows,dates)); html+=card('Semáforo diario','OK / Revisar / Crítico por fecha', stackDaily(rows,dates)); html+=card('Heatmap de criticidad','Entidad x día', heatmap(groups,dates), true);} else {html+=card('Ranking de impacto del día','Diferencia absoluta por entidad', pareto(groups)); html+=card('Disponible vs Saldo SRT','Comparación por entidad', balanceCompare(groups)); html+=card('Matriz de prioridad operacional','Impacto financiero vs diferencia porcentual', riskMatrixDaily(groups)); html+=card('Distribución del estado del día','Cantidad de entidades por estado', statusToday(groups));} document.getElementById('viz-grid').innerHTML=html; }
+function pareto(groups){ const max=Math.max(...groups.map(g=>g.maxAbs),1); return `<div class="bar-list">${groups.slice(0,7).map(g=>`<div class="bar-row"><span>${g.entidad.slice(0,18)}</span><div class="bar-track"><div class="bar ${g.estado==='OK'?'okbar':''}" style="width:${Math.max(2,g.maxAbs/max*100)}%"></div></div><strong>${fmtMoney.format(g.maxAbs)}</strong></div>`).join('')}</div>`; }
+function balanceCompare(groups){ const max=Math.max(...groups.map(g=>Math.max(Math.abs(g.total_disponible),Math.abs(g.saldo_srt))),1); return `<div class="bar-list">${groups.slice(0,7).map(g=>`<div class="bar-row"><span>${g.entidad.slice(0,18)}</span><div><div class="bar-track"><div class="bar okbar" style="width:${Math.max(2,Math.abs(g.total_disponible)/max*100)}%"></div></div><div class="bar-track" style="margin-top:4px"><div class="bar" style="width:${Math.max(2,Math.abs(g.saldo_srt)/max*100)}%"></div></div></div><strong>${fmtMoney.format(g.diferencia)}</strong></div>`).join('')}</div>`; }
+function riskMatrix(groups,dates){
+  const maxAbs=Math.max(...groups.map(g=>g.maxAbs),1), maxDays=Math.max(dates.length,1);
+  const ordered=[...groups].sort((a,b)=>b.maxAbs-a.maxAbs);
+  let html=`<svg class="svg-box" viewBox="0 0 620 300">
+    <rect x="55" y="35" width="520" height="210" fill="#ffffff"/>
+    <rect x="315" y="35" width="260" height="105" fill="#fde8e8" opacity=".55"/>
+    <rect x="315" y="140" width="260" height="105" fill="#fff4db" opacity=".45"/>
+    <rect x="55" y="140" width="260" height="105" fill="#e6f4ec" opacity=".55"/>
+    <line x1="55" y1="245" x2="575" y2="245" stroke="#cbd5e1"/>
+    <line x1="55" y1="245" x2="55" y2="35" stroke="#cbd5e1"/>
+    <line x1="315" y1="35" x2="315" y2="245" stroke="#d7dee8" stroke-dasharray="4 4"/>
+    <line x1="55" y1="140" x2="575" y2="140" stroke="#d7dee8" stroke-dasharray="4 4"/>
+    <text x="245" y="285" font-size="12" fill="#667085">Impacto financiero</text>
+    <text x="8" y="150" font-size="12" fill="#667085" transform="rotate(-90 18,150)">Recurrencia</text>
+    <text x="430" y="55" font-size="11" fill="#9b1c1c" font-weight="700">Alta prioridad</text>
+    <text x="85" y="230" font-size="11" fill="#276749" font-weight="700">Baja prioridad</text>`;
+  ordered.forEach((g,i)=>{
+    const x=55+(Math.sqrt(g.maxAbs/maxAbs))*510;
+    const y=245-(g.alertDays/maxDays)*210;
+    const r=7+Math.min(13,Math.abs(g.avgPct)/3);
+    const c=g.estado==='Crítico'?'#b91c1c':g.estado==='Revisar'?'#b7791f':'#2f855a';
+    const labelX = x>500 ? x-95 : x+12;
+    const labelY = Math.max(45, Math.min(238, y + ((i%3)-1)*12));
+    html+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" opacity=".88" stroke="#fff" stroke-width="2"/>
+      <text x="${labelX}" y="${labelY}" font-size="10.5" font-weight="800" fill="#172033">${g.entidad.slice(0,13)}</text>`;
+  });
+  return html+'</svg><div class="matrix-legend"><span><i class="legend-dot legend-ok"></i>OK</span><span><i class="legend-dot legend-warn"></i>Revisar</span><span><i class="legend-dot legend-crit"></i>Crítico</span></div><div class="chart-explain">Prioriza entidades que combinan monto alto y recurrencia dentro del período.</div>';
+}
+function riskMatrixDaily(groups){
+  const maxAbs=Math.max(...groups.map(g=>g.maxAbs),1), maxPct=Math.max(...groups.map(g=>Math.abs(g.dif_porcentaje)),1);
+  const ordered=[...groups].sort((a,b)=>b.maxAbs-a.maxAbs);
+  let html=`<svg class="svg-box" viewBox="0 0 620 300">
+    <rect x="55" y="35" width="520" height="210" fill="#fff"/>
+    <rect x="315" y="35" width="260" height="105" fill="#fde8e8" opacity=".55"/>
+    <rect x="315" y="140" width="260" height="105" fill="#fff4db" opacity=".45"/>
+    <rect x="55" y="140" width="260" height="105" fill="#e6f4ec" opacity=".52"/>
+    <line x1="55" y1="245" x2="575" y2="245" stroke="#cbd5e1"/>
+    <line x1="55" y1="245" x2="55" y2="35" stroke="#cbd5e1"/>
+    <line x1="315" y1="35" x2="315" y2="245" stroke="#d7dee8" stroke-dasharray="4 4"/>
+    <line x1="55" y1="140" x2="575" y2="140" stroke="#d7dee8" stroke-dasharray="4 4"/>
+    <text x="245" y="285" font-size="12" fill="#667085">Impacto financiero ($)</text>
+    <text x="8" y="150" font-size="12" fill="#667085" transform="rotate(-90 18,150)">Diferencia porcentual</text>
+    <text x="420" y="55" font-size="11" fill="#9b1c1c" font-weight="700">Prioridad alta</text>
+    <text x="85" y="230" font-size="11" fill="#276749" font-weight="700">Menor prioridad</text>`;
+  ordered.forEach((g,i)=>{
+    const x=55+(Math.sqrt(g.maxAbs/maxAbs))*510;
+    const y=245-(Math.abs(g.dif_porcentaje)/maxPct)*210;
+    const c=g.estado==='Crítico'?'#b91c1c':g.estado==='Revisar'?'#b7791f':'#2f855a';
+    const radius = 8 + Math.min(10, Math.sqrt(g.maxAbs/maxAbs)*10);
+    const labelX = x>500 ? x-92 : x+12;
+    const labelY = Math.max(45, Math.min(238, y + ((i%3)-1)*12));
+    html+=`<circle cx="${x}" cy="${y}" r="${radius}" fill="${c}" opacity=".88" stroke="#fff" stroke-width="2"/>
+      <text x="${labelX}" y="${labelY}" font-size="10.5" font-weight="800" fill="#172033">${g.entidad.slice(0,13)}</text>`;
+  });
+  return html+'</svg><div class="matrix-legend"><span><i class="legend-dot legend-ok"></i>OK</span><span><i class="legend-dot legend-warn"></i>Revisar</span><span><i class="legend-dot legend-crit"></i>Crítico</span></div><div class="chart-explain">Cruza diferencia en pesos con diferencia porcentual. Arriba a la derecha requiere revisión prioritaria.</div>';
+}
+function lineTotal(rows,dates){ const totals=dates.map(d=>({d,v:rows.filter(r=>r.fecha===d).reduce((s,r)=>s+Math.abs(r.diferencia),0)})); return lineFromSeries(totals.map(x=>x.v), totals.map(x=>shortDate(x.d)), fmtMoney); }
+function lineChart(rows,dates){ const vals=dates.map(d=>Math.abs((rows.find(r=>r.fecha===d)||{}).diferencia||0)); return lineFromSeries(vals, dates.map(shortDate), fmtMoney); }
+function lineFromSeries(vals,labels,formatter){ const max=Math.max(...vals,1); const points=vals.map((v,i)=>`${55+(i/Math.max(vals.length-1,1))*510},${245-(v/max)*200}`).join(' '); let html=`<svg class="svg-box" viewBox="0 0 620 300"><line x1="55" y1="245" x2="575" y2="245" stroke="#cbd5e1"/><line x1="55" y1="245" x2="55" y2="35" stroke="#cbd5e1"/>`; if(vals.length>1) html+=`<polyline points="${points}" fill="none" stroke="#b91c1c" stroke-width="4" stroke-linecap="round"/>`; vals.forEach((v,i)=>{const cx=55+(i/Math.max(vals.length-1,1))*510, cy=245-(v/max)*200; html+=`<circle cx="${cx}" cy="${cy}" r="5" fill="#b91c1c"/><text x="${cx-16}" y="270" font-size="11" fill="#667085">${labels[i]}</text>`}); return html+'</svg>'; }
+function balanceDaily(rows,dates){ const max=Math.max(...rows.map(r=>Math.max(Math.abs(r.total_disponible),Math.abs(r.saldo_srt))),1); return `<div class="bar-list">${dates.map(d=>{const r=rows.find(x=>x.fecha===d); if(!r)return '';return `<div class="bar-row"><span>${shortDate(d)}</span><div><div class="bar-track"><div class="bar okbar" style="width:${Math.max(2,Math.abs(r.total_disponible)/max*100)}%"></div></div><div class="bar-track" style="margin-top:4px"><div class="bar" style="width:${Math.max(2,Math.abs(r.saldo_srt)/max*100)}%"></div></div></div><strong>${fmtMoney.format(r.diferencia)}</strong></div>`}).join('')}</div>`; }
+function entityStatus(rows,dates){ return `<div class="bar-list">${dates.map(d=>{const r=rows.find(x=>x.fecha===d);return `<div class="bar-row"><span>${shortDate(d)}</span><div class="bar-track"><div class="bar ${r.estado==='OK'?'okbar':''}" style="width:100%"></div></div><strong><span class="badge ${statusClass(r.estado)}">${r.estado}</span></strong></div>`}).join('')}</div>`; }
+function singleDayEntity(g){ return `<div class="focus-card"><h4>${g.codigo} · ${g.entidad}</h4><div class="focus-kpi"><span>Disponible</span><strong>${fmtMoney.format(g.total_disponible)}</strong></div><div class="focus-kpi"><span>Saldo SRT</span><strong>${fmtMoney.format(g.saldo_srt)}</strong></div><div class="focus-kpi"><span>Diferencia</span><strong>${fmtMoney.format(g.diferencia)}</strong></div><div class="focus-kpi"><span>Dif. %</span><strong>${fmtPct(g.dif_porcentaje)}</strong></div></div>`; }
+function stackDaily(rows,dates){ return `<div class="stack-list">${dates.map(d=>{const s=rows.filter(r=>r.fecha===d), t=s.length||1, ok=s.filter(r=>r.estado==='OK').length, w=s.filter(r=>r.estado==='Revisar').length, c=s.filter(r=>r.estado==='Crítico').length; return `<div class="stack-row"><span>${shortDate(d)}</span><div class="stack"><div class="seg-ok" style="width:${ok/t*100}%"></div><div class="seg-warn" style="width:${w/t*100}%"></div><div class="seg-crit" style="width:${c/t*100}%"></div></div><strong>${ok}/${w}/${c}</strong></div>`}).join('')}</div><div class="chart-explain">Orden de lectura: OK / Revisar / Crítico.</div>`; }
+function statusToday(groups){
+  const ok=groups.filter(g=>g.estado==='OK').length;
+  const w=groups.filter(g=>g.estado==='Revisar').length;
+  const c=groups.filter(g=>g.estado==='Crítico').length;
+  const t=groups.length||1;
+  return `<div class="status-grid">
+    <div class="status-card ok-card"><span>OK</span><strong>${ok}</strong><span>entidades</span><div class="status-mini"><div style="width:${ok/t*100}%;background:var(--green)"></div></div></div>
+    <div class="status-card warn-card"><span>Revisar</span><strong>${w}</strong><span>entidades</span><div class="status-mini"><div style="width:${w/t*100}%;background:var(--amber)"></div></div></div>
+    <div class="status-card crit-card"><span>Crítico</span><strong>${c}</strong><span>entidades</span><div class="status-mini"><div style="width:${c/t*100}%;background:var(--red)"></div></div></div>
+  </div><div class="chart-explain">Distribución clara del día seleccionado. No usa ratios ambiguos como 0/5/2.</div>`;
+}
+function heatmap(groups,dates){ let html=`<div class="heat-wrap"><div class="heat-table" style="grid-template-columns:150px repeat(${dates.length},1fr)"><div class="heat-head">Entidad</div>${dates.map(d=>`<div class="heat-head">${shortDate(d)}</div>`).join('')}`; groups.forEach(g=>{html+=`<div class="heat-entity">${g.entidad}</div>`; dates.forEach(d=>{const r=g.rows.find(x=>x.fecha===d); html+=`<div class="heat-day ${r?r.estado:'OK'}">${r?r.estado.replace('Crítico','Crit').replace('Revisar','Rev'):'-'}</div>`;});}); return html+'</div></div>'; }
+function exportExcel(){ if(!currentExportRows.length){alert('No hay datos para exportar.');return;} const headers=Object.keys(currentExportRows[0]); const rows=currentExportRows.map(r=>headers.map(h=>r[h])); const html=`<html><head><meta charset="UTF-8"></head><body><table border="1"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(v=>`<td>${typeof v==='number'?String(v).replace('.',','):v}</td>`).join('')}</tr>`).join('')}</tbody></table></body></html>`; const blob=new Blob([html],{type:'application/vnd.ms-excel;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`consulta_control_saldos_${state.from}_${state.to}.xls`; a.click(); URL.revokeObjectURL(a.href); }
+setup();render();
+</script>
+</body>
+</html>

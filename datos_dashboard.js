@@ -1,6 +1,6 @@
 window.DASHBOARD_CONTROL_SALDOS = {
   "metadata": {
-    "generado_en": "2026-07-17 09:45:02",
+    "generado_en": "2026-07-17 15:11:02",
     "archivo_origen": "C:\\Users\\mfaure\\OneDrive - Credencial Argentina S. A\\CDP – Controles Diarios\\Control Saldos\\02_Maestros\\historico_control_saldos.xlsx",
     "carpeta_origen": "C:\\Users\\mfaure\\OneDrive - Credencial Argentina S. A\\CDP – Controles Diarios\\Control Saldos\\02_Maestros",
     "ultima_fecha_datos": "2026-07-17",

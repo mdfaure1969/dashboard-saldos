@@ -1,10 +1,10 @@
 window.DASHBOARD_CONTROL_SALDOS = {
   "metadata": {
-    "generado_en": "2026-07-16 15:39:44",
+    "generado_en": "2026-07-17 09:45:02",
     "archivo_origen": "C:\\Users\\mfaure\\OneDrive - Credencial Argentina S. A\\CDP – Controles Diarios\\Control Saldos\\02_Maestros\\historico_control_saldos.xlsx",
     "carpeta_origen": "C:\\Users\\mfaure\\OneDrive - Credencial Argentina S. A\\CDP – Controles Diarios\\Control Saldos\\02_Maestros",
-    "ultima_fecha_datos": "2026-07-16",
-    "cantidad_registros": 831,
+    "ultima_fecha_datos": "2026-07-17",
+    "cantidad_registros": 838,
     "cantidad_entidades": 7,
     "entidades": [
       "404 · ASTROPAY",
@@ -10819,6 +10819,97 @@ window.DASHBOARD_CONTROL_SALDOS = {
       "dif_porcentaje": -18.1267797765749,
       "estado": "Revisar",
       "observaciones": "Desvío alto"
+    },
+    {
+      "fecha": "2026-07-17",
+      "codigo": 404,
+      "entidad": "ASTROPAY",
+      "codigo_entidad": "404 · ASTROPAY",
+      "total_disponible": 35971965250.01044,
+      "registros": 1064285,
+      "saldo_srt": 37050287119.15,
+      "diferencia": -1078321869.139557,
+      "dif_porcentaje": -2.910427834666387,
+      "estado": "Revisar",
+      "observaciones": "Desvío moderado"
+    },
+    {
+      "fecha": "2026-07-17",
+      "codigo": 408,
+      "entidad": "URBAN INVESTMENT",
+      "codigo_entidad": "408 · URBAN INVESTMENT",
+      "total_disponible": 572002045.4899999,
+      "registros": 630,
+      "saldo_srt": 571608665.04,
+      "diferencia": 393380.4499999285,
+      "dif_porcentaje": 0.06881988921081182,
+      "estado": "OK",
+      "observaciones": "—"
+    },
+    {
+      "fecha": "2026-07-17",
+      "codigo": 409,
+      "entidad": "LOHAS SAS",
+      "codigo_entidad": "409 · LOHAS SAS",
+      "total_disponible": 3606792.759999997,
+      "registros": 78,
+      "saldo_srt": 3663608.65,
+      "diferencia": -56815.89000000292,
+      "dif_porcentaje": -1.550817661706387,
+      "estado": "Revisar",
+      "observaciones": "Desvío moderado"
+    },
+    {
+      "fecha": "2026-07-17",
+      "codigo": 416,
+      "entidad": "URBANA",
+      "codigo_entidad": "416 · URBANA",
+      "total_disponible": 8091135754.740013,
+      "registros": 1641,
+      "saldo_srt": 16082049056.19,
+      "diferencia": -7990913301.449987,
+      "dif_porcentaje": -49.68840272486468,
+      "estado": "Revisar",
+      "observaciones": "Desvío alto"
+    },
+    {
+      "fecha": "2026-07-17",
+      "codigo": 418,
+      "entidad": "MONTEMAR PREPAGO",
+      "codigo_entidad": "418 · MONTEMAR PREPAGO",
+      "total_disponible": 4441011780.659976,
+      "registros": 6940,
+      "saldo_srt": 4933600772.15,
+      "diferencia": -492588991.4900236,
+      "dif_porcentaje": -9.984370731224766,
+      "estado": "Revisar",
+      "observaciones": "Desvío moderado"
+    },
+    {
+      "fecha": "2026-07-17",
+      "codigo": 420,
+      "entidad": "FARMACLOUD",
+      "codigo_entidad": "420 · FARMACLOUD",
+      "total_disponible": 330852014.3,
+      "registros": 43,
+      "saldo_srt": 330075199.83,
+      "diferencia": 776814.469999969,
+      "dif_porcentaje": 0.2353446942999823,
+      "estado": "OK",
+      "observaciones": "—"
+    },
+    {
+      "fecha": "2026-07-17",
+      "codigo": 421,
+      "entidad": "CALF COOP. PROVINCIAL",
+      "codigo_entidad": "421 · CALF COOP. PROVINCIAL",
+      "total_disponible": 1701901774.139995,
+      "registros": 4421,
+      "saldo_srt": 1850532283.03,
+      "diferencia": -148630508.8900051,
+      "dif_porcentaje": -8.031770656096983,
+      "estado": "Revisar",
+      "observaciones": "Desvío moderado"
     }
   ]
 };
